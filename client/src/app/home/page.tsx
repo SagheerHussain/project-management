@@ -61,7 +61,7 @@ const HomePage = () => {
       acc[priority as Priority] = (acc[priority as Priority] || 0) + 1;
       return acc;
     },
-    {},
+    {}
   );
 
   const taskDistribution = Object.keys(priorityCount).map((key) => ({
@@ -75,7 +75,7 @@ const HomePage = () => {
       acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
-    {},
+    {}
   );
 
   const projectStatus = Object.keys(statusCount).map((key) => ({

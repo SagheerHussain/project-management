@@ -4,14 +4,15 @@ import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
 import { useGetAuthUserQuery, useGetProjectsQuery } from "@/state/api";
 import { signOut } from "aws-amplify/auth";
+import ModalNewProject from "../../app/projects/ModalNewProject";
+
 import {
   AlertCircle,
   AlertOctagon,
   AlertTriangle,
-  Briefcase,
   ChevronDown,
   ChevronUp,
-  Home,
+  LayoutDashboard,
   Layers3,
   LockIcon,
   LucideIcon,
@@ -21,6 +22,9 @@ import {
   User,
   Users,
   X,
+  ChartBarDecreasing,
+  NotebookText,
+  Plus,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,13 +32,15 @@ import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
 const Sidebar = () => {
+  const [showModal, setShowModal] = useState(false);
+
   const [showProjects, setShowProjects] = useState(true);
   const [showPriority, setShowPriority] = useState(true);
 
   const { data: projects } = useGetProjectsQuery();
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
-    (state) => state.global.isSidebarCollapsed,
+    (state) => state.global.isSidebarCollapsed
   );
 
   const { data: currentUser } = useGetAuthUserQuery({});
@@ -58,7 +64,7 @@ const Sidebar = () => {
       <div className="flex h-[100%] w-full flex-col justify-start">
         {/* TOP LOGO */}
         <div className="z-50 flex min-h-[56px] w-64 items-center justify-between bg-white px-6 pt-3 dark:bg-black">
-          <div className="text-xl font-bold text-gray-800 dark:text-white">
+          <div className="text-xl font-bold text-gray-800 dark:text-white tracking-[.60em]">
             S T U D
           </div>
           {isSidebarCollapsed ? null : (
@@ -74,13 +80,7 @@ const Sidebar = () => {
         </div>
         {/* TEAM */}
         <div className="flex items-center gap-5 border-y-[1.5px] border-gray-200 px-8 py-4 dark:border-gray-700">
-          Logo
-          {/* <Image
-            src="https://pm-s3-images.s3.us-east-2.amazonaws.com/logo.png"
-            alt="Logo"
-            width={40}
-            height={40}
-          /> */}
+          <Image src="/stud.png" alt="Logo" width={40} height={40} />
           <div>
             <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
               STUD TEAM
@@ -93,12 +93,35 @@ const Sidebar = () => {
         </div>
         {/* NAVBAR LINKS */}
         <nav className="z-10 w-full">
-          <SidebarLink icon={Home} label="Home" href="/" />
-          <SidebarLink icon={Briefcase} label="Timeline" href="/timeline" />
+          <SidebarLink icon={LayoutDashboard} label="Home" href="/" />
+          <SidebarLink
+            icon={ChartBarDecreasing}
+            label="Timeline"
+            href="/timeline"
+          />
           <SidebarLink icon={Search} label="Search" href="/search" />
           <SidebarLink icon={Settings} label="Settings" href="/settings" />
           <SidebarLink icon={User} label="Users" href="/users" />
           <SidebarLink icon={Users} label="Teams" href="/teams" />
+
+          <SidebarLink
+            icon={Plus}
+            label="Add New Project"
+            href="#"
+            onClick={() => {
+              console.log("Add New Project clicked");
+              setShowModal(true);
+            }}
+          />
+
+          {/* New Project Modal */}
+
+          {showModal && (
+            <ModalNewProject
+              isOpen={showModal}
+              onClose={() => setShowModal(false)}
+            />
+          )}
         </nav>
 
         {/* PROJECTS LINKS */}
@@ -118,7 +141,7 @@ const Sidebar = () => {
           projects?.map((project) => (
             <SidebarLink
               key={project.id}
-              icon={Briefcase}
+              icon={NotebookText}
               label={project.name}
               href={`/projects/${project.id}`}
             />
@@ -196,15 +219,30 @@ interface SidebarLinkProps {
   href: string;
   icon: LucideIcon;
   label: string;
+  onClick?: () => void;
 }
 
-const SidebarLink = ({ href, icon: Icon, label }: SidebarLinkProps) => {
+const SidebarLink = ({
+  href,
+  icon: Icon,
+  label,
+  onClick,
+}: SidebarLinkProps) => {
   const pathname = usePathname();
   const isActive =
     pathname === href || (pathname === "/" && href === "/dashboard");
 
   return (
-    <Link href={href} className="w-full">
+    <Link
+      href={href}
+      onClick={(e) => {
+        if (onClick) {
+          e.preventDefault(); // Prevent navigation if onClick is defined
+          onClick();
+        }
+      }}
+      className="w-full"
+    >
       <div
         className={`relative flex cursor-pointer items-center gap-3 transition-colors hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-700 ${
           isActive ? "bg-gray-100 text-white dark:bg-gray-600" : ""
